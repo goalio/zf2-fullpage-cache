@@ -7,20 +7,17 @@
 
 namespace StrokerCache\Service;
 
+use Zend\Cache\Pattern\CaptureCache;
 use Zend\Mvc\MvcEvent;
 use StrokerCache\Options\ModuleOptions;
-use Zend\Cache\Storage\TaggableInterface;
 use StrokerCache\Strategy\StrategyInterface;
-use Zend\Cache\Storage\StorageInterface;
 
 class CacheService
 {
-    const TAG_PREFIX = 'strokercache_';
-
     /**
-     * @var StorageInterface
+     * @var CaptureCache
      */
-    private $cacheStorage;
+    private $captureCache;
 
     /**
      * @var ModuleOptions
@@ -32,29 +29,17 @@ class CacheService
      */
     protected $strategies = array();
 
+
     /**
      * Default constructor
      *
-     * @param \Zend\Cache\Storage\StorageInterface $cacheStorage
-     * @param \StrokerCache\Options\ModuleOptions  $options
+     * @param \Zend\Cache\Pattern\CaptureCache $captureCache
+     * @param \StrokerCache\Options\ModuleOptions $options
      */
-    public function __construct(StorageInterface $cacheStorage, ModuleOptions $options)
+    public function __construct(CaptureCache $captureCache, ModuleOptions $options)
     {
-        $this->setCacheStorage($cacheStorage);
+        $this->setCaptureCache($captureCache);
         $this->setOptions($options);
-    }
-
-    /**
-     * Check if a page is saved in the cache and return contents. Return null when no item is found.
-     */
-    public function load()
-    {
-        $id = $this->createId();
-        if ($this->getCacheStorage()->hasItem($id)) {
-            return $this->getCacheStorage()->getItem($id);
-        }
-
-        return null;
     }
 
     /**
@@ -62,82 +47,27 @@ class CacheService
      */
     public function save(MvcEvent $e)
     {
-        $shouldCache = false;
-        $tags = array();
         /** @var $strategy \StrokerCache\Strategy\StrategyInterface */
         foreach ($this->getStrategies() as $strategy) {
             if ($strategy->shouldCache($e)) {
-                $shouldCache = true;
-                if ($this->getCacheStorage() instanceof TaggableInterface) {
-                    $tags = array_merge($tags, $this->getTags($e));
-                }
-            }
-        }
-
-        if ($shouldCache) {
-            $id = $this->createId();
-            $content = $e->getResponse()->getContent();
-            $this->getCacheStorage()->setItem($id, $content);
-            if ($this->getCacheStorage() instanceof TaggableInterface) {
-                $this->getCacheStorage()->setTags($id, $tags);
+                $content = $e->getResponse()->getContent();
+                $this->getCaptureCache()->set($content);
             }
         }
     }
 
     /**
-     * @param array $tags
+     * @param string $pattern
      * @return bool
      */
-    public function clearByTags(array $tags = array())
+    public function clearByGlob($pattern)
     {
-        if (!$this->getCacheStorage() instanceof TaggableInterface) {
+        try {
+            $this->getCaptureCache()->clearByGlob($pattern);
+        } catch (\Exception $e) {
             return false;
         }
-        $tags = array_map(
-            function ($tag) { return self::TAG_PREFIX . $tag; },
-            $tags
-        );
-        return $this->getCacheStorage()->clearByTags($tags);
-    }
-
-    /**
-     * Determine the page to save from the request
-     *
-     * @throws \RuntimeException
-     * @return string
-     */
-    protected function createId()
-    {
-        if (!isset($_SERVER['REQUEST_URI'])) {
-            throw new \RuntimeException("Can't auto-detect current page identity");
-        }
-
-        $requestUri = $_SERVER['REQUEST_URI'];
-
-        return md5($requestUri);
-    }
-
-    /**
-     * Cache tags to use for this page
-     *
-     * @param  \Zend\Mvc\MvcEvent $event
-     * @return array
-     */
-    public function getTags(MvcEvent $event)
-    {
-        $routeName = $event->getRouteMatch()->getMatchedRouteName();
-        $tags = array(
-            self::TAG_PREFIX . 'route_' . $routeName
-        );
-        foreach ($event->getRouteMatch()->getParams() as $key => $value) {
-            if ($key == 'controller') {
-                $tags[] = self::TAG_PREFIX . 'controller_' . $value;
-            } else {
-                $tags[] = self::TAG_PREFIX . 'param_' . $key . '_' . $value;
-            }
-        }
-
-        return $tags;
+        return true;
     }
 
     /**
@@ -165,19 +95,19 @@ class CacheService
     }
 
     /**
-     * @return \Zend\Cache\Storage\StorageInterface
+     * @return \Zend\Cache\Pattern\CaptureCache
      */
-    public function getCacheStorage()
+    public function getCaptureCache()
     {
-        return $this->cacheStorage;
+        return $this->captureCache;
     }
 
     /**
-     * @param \Zend\Cache\Storage\StorageInterface $cacheStorage
+     * @param \Zend\Cache\Pattern\CaptureCache $captureCache
      */
-    public function setCacheStorage($cacheStorage)
+    public function setCaptureCache(CaptureCache $captureCache)
     {
-        $this->cacheStorage = $cacheStorage;
+        $this->captureCache = $captureCache;
     }
 
     /**

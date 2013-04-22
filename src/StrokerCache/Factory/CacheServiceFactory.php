@@ -21,8 +21,8 @@ class CacheServiceFactory implements FactoryInterface
         /** @var $options \StrokerCache\Options\ModuleOptions */
         $options = $serviceLocator->get('StrokerCache\Options\ModuleOptions');
 
-        $cacheStorage = $serviceLocator->get('StrokerCache\Storage\CacheStorage');
-        $cacheService = new CacheService($cacheStorage, $options);
+        $captureCache = $serviceLocator->get('StrokerCache\Storage\CaptureCache');
+        $cacheService = new CacheService($captureCache, $options);
 
         // Register enabled strategies on the cacheListener
         $strategies = $options->getStrategies();

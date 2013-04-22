@@ -7,11 +7,11 @@
 
 namespace StrokerCache\Factory;
 
-use Zend\Cache\StorageFactory;
+use Zend\Cache\PatternFactory;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
-class CacheStorageFactory implements FactoryInterface
+class CaptureCaheFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
@@ -20,8 +20,9 @@ class CacheStorageFactory implements FactoryInterface
     {
         /** @var $options \StrokerCache\Options\ModuleOptions */
         $options = $serviceLocator->get('StrokerCache\Options\ModuleOptions');
-        $adapterOptions = array('adapter' => $options->getStorageAdapter());
+        $captureOptions = array('capture' => $options->getCaptureOptions());
 
-        return StorageFactory::factory($adapterOptions);
+        return PatternFactory::factory('capture', $captureOptions);
+
     }
 }

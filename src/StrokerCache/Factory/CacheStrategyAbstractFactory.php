@@ -7,6 +7,7 @@
 
 namespace StrokerCache\Factory;
 
+use ReflectionClass;
 use Zend\ServiceManager\AbstractFactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
@@ -17,7 +18,8 @@ class CacheStrategyAbstractFactory implements AbstractFactoryInterface
      */
     public function canCreateServiceWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName)
     {
-        return (bool) strstr($requestedName, 'StrokerCache\\Strategy');
+        $class = new ReflectionClass($requestedName);
+        return $class->implementsInterface('StrokerCache\Strategy\StrategyInterface');
     }
 
     /**

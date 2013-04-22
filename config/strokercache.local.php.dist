@@ -1,6 +1,9 @@
 <?php
 return array(
     'strokercache' => array(
+        'capture' => array(
+           'public_dir' => __DIR__ . '/../public/static',
+        ),
         'strategies' => array(
             'enabled' => array(
                 'StrokerCache\Strategy\RouteName' => array(

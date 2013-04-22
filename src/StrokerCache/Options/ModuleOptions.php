@@ -19,7 +19,7 @@ class ModuleOptions extends AbstractOptions
     /**
      * @var array
      */
-    private $storageAdapter;
+    private $captureOptions;
 
     /**
      * @return array
@@ -40,16 +40,16 @@ class ModuleOptions extends AbstractOptions
     /**
      * @return array
      */
-    public function getStorageAdapter()
+    public function getCaptureOptions()
     {
-        return $this->storageAdapter;
+        return $this->captureOptions;
     }
 
     /**
-     * @param array $storageAdapter
+     * @param array $captureOptions
      */
-    public function setStorageAdapter(array $storageAdapter)
+    public function setCaptureOptions(array $captureOptions)
     {
-        $this->storageAdapter = $storageAdapter;
+        $this->captureOptions = $captureOptions;
     }
 }

@@ -26,11 +26,6 @@ class CacheListener implements ListenerAggregateInterface
     protected $cacheService;
 
     /**
-     * @var bool
-     */
-    protected $loadedFromCache = false;
-
-    /**
      * Default constructor
      *
      * @param CacheService $cacheService
@@ -45,7 +40,6 @@ class CacheListener implements ListenerAggregateInterface
      */
     public function attach(EventManagerInterface $events)
     {
-        $this->listeners[] = $events->attach('route', array($this, 'onRoute'), 100);
         $this->listeners[] = $events->attach('finish', array($this, 'onFinish'), -100);
     }
 
@@ -61,29 +55,6 @@ class CacheListener implements ListenerAggregateInterface
         }
     }
 
-    /**
-     * Load the page contents from the cache and set the response.
-     *
-     * @param  MvcEvent $e
-     * @return \Zend\Stdlib\ResponseInterface|void
-     */
-    public function onRoute(MvcEvent $e)
-    {
-        if (!$e->getRequest() instanceof HttpRequest) {
-            return;
-        }
-
-        $data = $this->getCacheService()->load();
-
-        if ($data !== null) {
-            $this->loadedFromCache = true;
-
-            $response = $e->getResponse();
-            $response->setContent($data);
-
-            return $response;
-        }
-    }
 
     /**
      * Save page contents to the cache
@@ -93,7 +64,7 @@ class CacheListener implements ListenerAggregateInterface
      */
     public function onFinish(MvcEvent $e)
     {
-        if (!$e->getRequest() instanceof HttpRequest || $this->loadedFromCache) {
+        if (!$e->getRequest() instanceof HttpRequest) {
             return;
         }
 

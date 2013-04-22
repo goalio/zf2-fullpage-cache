@@ -18,7 +18,7 @@ return array(
             'routes' => array(
                 'strokercache-clear' => array(
                     'options' => array(
-                        'route' => 'strokercache clear <tags>',
+                        'route' => 'strokercache clear <glob>',
                         'defaults' => array(
                             'controller' => 'StrokerCache\Controller\Cache',
                             'action'     => 'clear',
@@ -36,8 +36,8 @@ return array(
     ),
 
     'strokercache' => array(
-        'storage_adapter' => array(
-            'name' => 'Zend\Cache\Storage\Adapter\FileSystem',
+        'capture' => array(
+            // empty
         ),
         'strategies' => array(
             'plugin_manager' => array(

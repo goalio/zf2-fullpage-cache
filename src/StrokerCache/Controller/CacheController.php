@@ -40,13 +40,12 @@ class CacheController extends AbstractActionController
      */
     public function clearAction()
     {
-        $tags = $this->getRequest()->getParam('tags');
-        if (null === $tags) {
-            return "\n\nYou should provide tags";
+        $pattern = $this->getRequest()->getParam('glob');
+        if (null === $pattern) {
+            return "\n\nYou should provide a glob pattern";
         }
 
-        $tags   = explode(',', $tags);
-        $result = $this->getCacheService()->clearByTags($tags);
+        $result = $this->getCacheService()->clearByGlob($pattern);
 
         return sprintf(
             "\n\nCache invalidation %s\n\n",
